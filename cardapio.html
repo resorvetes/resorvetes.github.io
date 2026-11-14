@@ -74,7 +74,7 @@ input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px
 <p>🕛 <b>Quarta a segunda, das 12h às 22h</b><br>Fechado às terças-feiras</p>
 <p><b>Registre seu momento e marque a gente!</b></p>
 <a class="btn" href="https://www.instagram.com/re_sorvetessg" target="_blank" rel="noopener">Seguir no Instagram</a>
-<p style="opacity:.7;font-size:.85rem;margin-top:18px">© Re Sorvetes · Valores sujeitos a alteração · <a href="#admin">Admin</a></p>
+<p id="ver" style="opacity:.6;font-size:.75rem;margin-top:14px"></p><p style="opacity:.7;font-size:.85rem;margin-top:18px">© Re Sorvetes · Valores sujeitos a alteração · <a href="#admin">Admin</a></p>
 </footer>
 <button id="cb" hidden=""></button>
 <div class="ov" id="dlg" hidden=""></div>
@@ -202,7 +202,7 @@ function doLogin(){var m=$('#lm');m.textContent='Entrando…';AUTH.signInWithEma
 function fbInit(){var F=window.RS_FB;if(!F||!F.cfg||!F.cfg.apiKey||!window.firebase)return;
 try{firebase.initializeApp(F.cfg);DB=firebase.firestore();AUTH=firebase.auth()}catch(x){DB=null;AUTH=null;return}
 AUTH.onAuthStateChanged(function(u){canEdit=!!u;route()});
-DB.collection('imgs').get().then(function(q){q.forEach(function(d){var v=d.data().d;IMS[d.id]=v;REV[v]=d.id})}).catch(function(){}).then(function(){return DB.doc('menu/main').get()}).then(function(d){if(!d||!d.exists)return;var n=JSON.parse(d.data().j);walk(n,function(v){return v[0]=='@'?(IMS[v.slice(1)]||''):v});S=n;payUI();carr();site();drawCart();route()}).catch(function(){})}
+DB.collection('imgs').get().then(function(q){q.forEach(function(d){var v=d.data().d;IMS[d.id]=v;REV[v]=d.id})}).catch(function(){}).then(function(){return DB.doc('menu/main').get()}).then(function(d){var v=$('#ver');if(!d||!d.exists){if(v)v.textContent='Cardápio: versão inicial (sem dados no banco)';return}var n=JSON.parse(d.data().j);walk(n,function(x){return x[0]=='@'?(IMS[x.slice(1)]||''):x});S=n;if(v)v.textContent='Cardápio atualizado em '+new Date(d.data().t).toLocaleString('pt-BR');payUI();carr();site();drawCart();route()}).catch(function(er){var v=$('#ver');if(v)v.textContent='Erro ao carregar o banco: '+((er&&(er.code||er.message))||er)})}
 document.addEventListener('change',function(e){var t=e.target;
 if(t.dataset.up){var f=t.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var k=Math.min(1,1280/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);setP(t.dataset.up,cv.toDataURL('image/jpeg',.86));admin()};im.onerror=function(){msg('Não foi possível ler essa imagem. Tente uma foto em JPG ou PNG.')};im.src=r.result};r.onerror=function(){msg('Não foi possível abrir o arquivo.')};r.readAsDataURL(f);t.value=''}
 else if(t.dataset.p&&t.type=='checkbox'){setP(t.dataset.p,t.checked)}else if(t.dataset.p){var v=t.value;if(t.dataset.t=='n'){v=v.trim()===''?null:parseFloat(v.replace(',','.'));if(v!==null&&isNaN(v))v=null}else if(t.dataset.t=='i')v=parseInt(v)||0;else if(t.dataset.t=='l')v=v.split(/[,\n]/).map(function(s){return s.trim()}).filter(Boolean);setP(t.dataset.p,v)}});
