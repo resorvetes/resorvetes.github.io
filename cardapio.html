@@ -84,9 +84,10 @@ input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px
 <div class="ov" id="cart" hidden=""><div class="box">
 <h3 style="margin:0 0 8px;color:var(--pri)">🛒 Seu pedido</h3>
 <div id="lines"></div>
-<input id="fn" placeholder="Seu nome *" autocomplete="name">
 <select id="ft"><option>Retirada na loja</option><option>Entrega</option></select>
-<input id="fa" placeholder="Endereço de entrega (se for entrega)">
+<input id="fn" placeholder="Quem vai retirar? *" autocomplete="name">
+<div id="rtb"><p class="sub" style="margin:8px 0 0">Horário da retirada * (das 12h às 22h)</p><input id="fh" type="time" min="12:00" max="22:00"></div>
+<div id="dlb" hidden><input id="fr" placeholder="Rua *" autocomplete="address-line1"><input id="fnu" placeholder="Número da casa *" inputmode="numeric"><input id="fb" placeholder="Bairro *"><input id="fe" placeholder="Referência (opcional)"></div>
 <select id="fp"><option value="">Forma de pagamento *</option><option>Pix</option><option>Cartão</option><option>Dinheiro</option></select><div id="pixb" class="pay" hidden=""></div><div id="cashb" class="pay" hidden=""><b>Precisa de troco?</b><select id="fc"><option value="">Selecione *</option><option>Não</option><option>Sim</option></select><input id="fk" inputmode="decimal" placeholder="Troco para quanto? (R$) *" hidden=""></div><textarea id="fo" rows="2" placeholder="Observações (ex.: sem granulado)"></textarea>
 <p id="err" class="sub" style="color:#d33"></p>
 <div class="bar"><button class="btn g" id="cx">Fechar</button><a class="btn" id="send" target="_blank" rel="noopener">Enviar pelo WhatsApp</a></div>
@@ -156,10 +157,10 @@ else if(a=='p'){cart[i].q++;saveCart();drawCart()}
 else admAct(a,t)});
 $('#cb').onclick=function(){$('#cart').hidden=false};
 $('#cx').onclick=function(){$('#cart').hidden=true};
-$('#send').onclick=function(e){var n=$('#fn').value.trim();if(!n){e.preventDefault();$('#err').textContent='Informe seu nome para enviar.';return}
-var d=$('#ft').value=='Entrega';if(d&&!$('#fa').value.trim()){e.preventDefault();$('#err').textContent='Informe o endereço de entrega.';return}if(d&&total()<MIN()){e.preventDefault();$('#err').textContent='Pedido mínimo para entrega: '+F(MIN())+'. Faltam '+F(MIN()-total())+'.';return}var pg=$('#fp').value,cs=$('#fc').value,tk=$('#fk').value.trim();if(!pg){e.preventDefault();$('#err').textContent='Escolha a forma de pagamento.';return}if(pg=='Dinheiro'&&cs=='Sim'&&tk&&!(parseFloat(tk.replace(',','.'))>=total())){e.preventDefault();$('#err').textContent='O valor para troco deve ser igual ou maior que o total do pedido.';return}if(pg=='Dinheiro'&&(!cs||(cs=='Sim'&&!tk))){e.preventDefault();$('#err').textContent=cs=='Sim'?'Informe para quanto precisa de troco.':'Informe se precisa de troco.';return}
+$('#send').onclick=function(e){var n=$('#fn').value.trim();if(!n){e.preventDefault();$('#err').textContent=$('#ft').value=='Entrega'?'Informe seu nome para enviar.':'Informe quem vai retirar o pedido.';return}
+var d=$('#ft').value=='Entrega';var ru='',nu='',ba='',rf='',hr='';if(d){ru=$('#fr').value.trim();nu=$('#fnu').value.trim();ba=$('#fb').value.trim();rf=$('#fe').value.trim();if(!ru||!nu||!ba){e.preventDefault();$('#err').textContent='Informe a rua, o número da casa e o bairro.';return}}else{hr=$('#fh').value;if(!hr){e.preventDefault();$('#err').textContent='Informe o horário da retirada.';return}if(hr<'12:00'||hr>'22:00'){e.preventDefault();$('#err').textContent='A retirada é das 12h às 22h.';return}}if(d&&total()<MIN()){e.preventDefault();$('#err').textContent='Pedido mínimo para entrega: '+F(MIN())+'. Faltam '+F(MIN()-total())+'.';return}var pg=$('#fp').value,cs=$('#fc').value,tk=$('#fk').value.trim();if(!pg){e.preventDefault();$('#err').textContent='Escolha a forma de pagamento.';return}if(pg=='Dinheiro'&&cs=='Sim'&&tk&&!(parseFloat(tk.replace(',','.'))>=total())){e.preventDefault();$('#err').textContent='O valor para troco deve ser igual ou maior que o total do pedido.';return}if(pg=='Dinheiro'&&(!cs||(cs=='Sim'&&!tk))){e.preventDefault();$('#err').textContent=cs=='Sim'?'Informe para quanto precisa de troco.':'Informe se precisa de troco.';return}
 $('#err').textContent='';
-var tx='Olá, Re Sorvetes! Quero fazer um pedido:\n'+cart.map(function(x){return '• '+x.q+'x '+x.n+' — '+F(x.p*x.q)}).join('\n')+'\n\nTotal: '+F(total())+'\nNome: '+n+'\nPagamento: '+pg+(pg=='Dinheiro'?(cs=='Sim'?' (troco para R$ '+tk+')':' (sem troco)'):'')+(pg=='Pix'&&S.pix?' — chave Pix: '+S.pix:'')+'\n'+$('#ft').value+(d?': '+$('#fa').value.trim():'')+($('#fo').value.trim()?'\nObs: '+$('#fo').value.trim():'');
+var tx='Olá, Re Sorvetes! Quero fazer um pedido:\n'+cart.map(function(x){return '• '+x.q+'x '+x.n+' — '+F(x.p*x.q)}).join('\n')+'\n\nTotal: '+F(total())+'\n'+(d?'Nome':'Quem vai retirar')+': '+n+'\nPagamento: '+pg+(pg=='Dinheiro'?(cs=='Sim'?' (troco para R$ '+tk+')':' (sem troco)'):'')+(pg=='Pix'&&S.pix?' — chave Pix: '+S.pix:'')+'\n'+(d?'Entrega: '+ru+', '+nu+' - '+ba+(rf?' (Ref.: '+rf+')':''):'Retirada na loja às '+hr)+($('#fo').value.trim()?'\nObs: '+$('#fo').value.trim():'');
 this.href='https://wa.me/5514997642372?text='+encodeURIComponent(tx)};
 /* ADMIN */
 function setP(p,v){var k=p.split('.'),o=S;for(var j=0;j<k.length-1;j++)o=o[k[j]];o[k[k.length-1]]=v}
@@ -227,7 +228,8 @@ function route(){var a=location.hash=='#admin';$('#menu').hidden=a;$('#nav').hid
 if(a){if(canEdit)admin();else $('#adm').innerHTML=loginView()}}
 window.addEventListener('hashchange',route);
 function payUI(){var p=$('#fp').value;$('#pixb').hidden=p!='Pix';$('#cashb').hidden=p!='Dinheiro';$('#fk').hidden=$('#fc').value!='Sim';$('#pixb').innerHTML=S.pix?'Chave Pix (telefone): <b>'+E(S.pix)+'</b> <button class="sm" id="cp">Copiar</button><br><small>Depois de pagar, envie o comprovante no WhatsApp.</small>':'A chave Pix será enviada no WhatsApp quando você confirmar o pedido.';var b=$('#cp');if(b)b.onclick=function(){try{navigator.clipboard.writeText(S.pix);b.textContent='Copiado!'}catch(x){}}}
-$('#ft').onchange=drawCart;$('#fp').onchange=payUI;$('#fc').onchange=payUI;payUI();carr();site();drawCart();route();
+function modeUI(){var d=$('#ft').value=='Entrega';$('#dlb').hidden=!d;$('#rtb').hidden=d;$('#fn').placeholder=d?'Seu nome *':'Quem vai retirar? *'}
+$('#ft').onchange=function(){modeUI();drawCart()};modeUI();$('#fp').onchange=payUI;$('#fc').onchange=payUI;payUI();carr();site();drawCart();route();
 fbInit();
 })();
 </script></body></html>
